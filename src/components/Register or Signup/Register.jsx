@@ -15,12 +15,22 @@ const Register = () => {
     //1. Prevent page refresh
     event.preventDefault();
     setSuccess("");
+    setError("");
     //2. collect form data
     const email = event.target.email.value;
     const password = event.target.password.value;
     console.log("Email:", email, "Password:", password);
     // validation using regular expression
-
+    if (!/(?=.*[A-Z])/.test(password)) {
+      setError("Please add at least one uppercase");
+      return;
+    } else if (!/(?=.*[0-9].*[0-9])/.test(password)) {
+      setError("Please add at least two numbers");
+      return;
+    } else if (password.length < 6) {
+      setError("Please add at least 6 characters");
+      return;
+    }
     //3. create user in firebase
     createUserWithEmailAndPassword(auth, email, password)
       .then((result) => {
