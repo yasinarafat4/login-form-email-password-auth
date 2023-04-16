@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import "./Register.css";
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  sendEmailVerification,
+  updateProfile,
+} from "firebase/auth";
 import app from "../../firebase/firebase.config";
+import { Link } from "react-router-dom";
 
 const auth = getAuth(app);
 
@@ -17,9 +23,10 @@ const Register = () => {
     setSuccess("");
     setError("");
     //2. collect form data
+    const name = event.target.name.value;
     const email = event.target.email.value;
     const password = event.target.password.value;
-    console.log("Email:", email, "Password:", password);
+    console.log("Name:", name, "Email:", email, "Password:", password);
     // validation using regular expression
     if (!/(?=.*[A-Z])/.test(password)) {
       setError("Please add at least one uppercase");
@@ -45,9 +52,32 @@ const Register = () => {
 
         // success message
         setSuccess("User has been created successfully");
+
+        sendVerificationEmail(result.user);
+        updateUserData(result.user, name);
       })
       .catch((error) => {
         console.error(error);
+        setError(error.message);
+      });
+  };
+
+  const sendVerificationEmail = (user) => {
+    sendEmailVerification(user).then((res) => {
+      console.log(res);
+      alert("Please verify your email address");
+    });
+  };
+
+  const updateUserData = (user, name) => {
+    updateProfile(user, {
+      displayName: name,
+    })
+      .then(() => {
+        console.log("user name updated");
+      })
+      .catch((error) => {
+        console.log(error);
         setError(error.message);
       });
   };
@@ -66,6 +96,15 @@ const Register = () => {
       <div className="register-container">
         <h3 className="center">Please Register</h3>
         <form onSubmit={handleSubmit}>
+          <input
+            className="input-field"
+            type="text"
+            name="name"
+            id="name"
+            placeholder="Your Name"
+            required
+          />
+          <br />
           <input
             onChange={handleEmailChange}
             className="input-field"
@@ -91,6 +130,12 @@ const Register = () => {
           <input className="btn-register" type="submit" value="Register" />
         </form>
       </div>
+      <p>
+        {" "}
+        <small>
+          Already have an account? Please <Link to="/login">Login</Link>
+        </small>{" "}
+      </p>
     </>
   );
 };
